@@ -51,18 +51,20 @@ namespace Lyrilang
             {
                 code = code + "\n\t\t\t" + "script" + keyValue + ",";
             }
-            code = code + "\n\t\t\t" + "UNICODE_FORMAT_NOT_FOUND" + ",";
+            //code = code + "\n\t\t\t" + "UNICODE_FORMAT_NOT_FOUND" + ",";
 
             code = code + @"
         }
 
-        public supportedUnicodeLanguages checkForUnicode(String sourceLyrics)
+        private List<supportedUnicodeLanguages> detectedUnicodeFormats = new List<supportedUnicodeLanguages>();
+
+        public List<supportedUnicodeLanguages> checkForUnicode(String sourceLyrics)
         {";
             foreach (var keyValue in supportedScriptList.Keys)
             {
-                code = code + "\n\t\t\tif (contain" + keyValue + "Unicode(sourceLyrics)) return supportedUnicodeLanguages.script" + keyValue + ";";
+                code = code + "\n\t\t\tif (contain" + keyValue + "Unicode(sourceLyrics))\n\t\t\t{\n\t\t\t\tdetectedUnicodeFormats.Add(supportedUnicodeLanguages.script" + keyValue + ");\n\t\t\t}\n";
             }
-            code = code + "\n\n\t\t\treturn supportedUnicodeLanguages.UNICODE_FORMAT_NOT_FOUND;";
+            code = code + "\n\n\t\t\treturn detectedUnicodeFormats;";
 
             code = code + @"
         }";
@@ -77,7 +79,7 @@ namespace Lyrilang
             code = code + "\n\t}\n}";
 
             File.WriteAllText(generatedFileName, code);
-            Console.WriteLine("Genearted file successfully : " + generatedFileName);
+            Console.WriteLine("Generated file successfully : " + generatedFileName);
 
             // compile
             var references = new List<MetadataReference>
