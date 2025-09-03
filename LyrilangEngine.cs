@@ -1,5 +1,10 @@
 ﻿using System.Xml.Resolvers;
 using static System.Net.Mime.MediaTypeNames;
+using System.Text.RegularExpressions;
+using Microsoft.CSharp;
+using System;
+using System.Linq;
+using System.Reflection;
 
 namespace Lyrilang
 {
@@ -7,50 +12,43 @@ namespace Lyrilang
     {
         public LyrilangEngine(String titleName, String albumName, String songLyrics)
         {
-            String sourceString = prepSourceString(titleName, albumName, songLyrics);
+            String sourceString = Utility.prepSourceString(titleName, albumName, songLyrics);
+            
+            // Unicode Detector meta-programming approach
+            UnicodeDetectorGenerator detectorGenerator = new UnicodeDetectorGenerator("./GeneratedUnicodeDetector.cs");
+            object detector = detectorGenerator.CreateUnicodeDetectorInstance();
+            Type detectorType = detector.GetType();
+            MethodInfo checkForUnicodeMethod = detectorType.GetMethod("checkForUnicode");
+            Type enumType = detectorType.GetNestedType("supportedUnicodeLanguages");
 
-            if (checkForSinhalaUnicode(sourceString))
+            object result = checkForUnicodeMethod.Invoke(detector, new object[] { sourceString });
+
+            // Resolve Unicode Types
+            if (Utility.IsEnumValue(result, enumType, "scriptSinhala"))
             {
                 Console.WriteLine("Found: Sinhalese Unicode");
             }
-            else
+            if (Utility.IsEnumValue(result, enumType, "scriptChinese"))
             {
-                Console.WriteLine("Not found: Sinhalese Unicode");
+                Console.WriteLine("Found: Chinese Unicode");
+            }
+            if (Utility.IsEnumValue(result, enumType, "scriptHiragana") || Utility.IsEnumValue(result, enumType, "scriptKatakana"))
+            {
+                Console.WriteLine("Found: Japanese Unicode");
             }
 
-            // todo: confirm unicode first
-            String[] tokenizedSource = sourceStringTokenizer(sourceString);
+            // todo: words
+            String[] tokenizedSource = Utility.sourceStringTokenizer(sourceString);
             if (containSinhalaWords(tokenizedSource))
             {
                 Console.WriteLine("Found: Sinhala Words");
             }
-            else { 
-                Console.WriteLine("Not found: Sinhala words");
-            }
 
-        }
-
-        private static String prepSourceString(String titleName, String albumName, String songLyrics) {
-            // todo: handle empty values
-            return titleName + " " + albumName + " " + songLyrics;
-        }
-
-        private static String[] sourceStringTokenizer(String sourceString)
-        {
-            char[] delimeterList = { ' ', '\t', '\n' };
-            String[] tokenizedSource = sourceString.ToLower().Split(delimeterList, StringSplitOptions.RemoveEmptyEntries);
-
-            return tokenizedSource;
-        }
-
-        private bool checkForSinhalaUnicode(String sourceString)
-        {
-            bool sinhalaUnicode = sourceString.Any(c => c >= 0x0D80 && c <= 0x0DFF);
-            return sinhalaUnicode;
+            Console.WriteLine("END OF EXECUTION");
         }
 
         private static bool containSinhalaWords(String[] tokenizedSource) {
-            // get and load hashset from external source
+            // todo:get and load hashset from external source
             HashSet<String> sinhalaWords = new HashSet<String> 
             {
                 "ayubowan", "kohomada", "mata", "mama", "oba", "api", "meka", "eka", "dan", "kiyala"
@@ -59,32 +57,5 @@ namespace Lyrilang
             return hasSinhalaWords;
         }
 
-   
     }
 }
-
-
-/*
- class Program
-{
-    static void Main()
-    {
-        string text = "Hello, I said ayubowan to my friend";
-        var lowerText = text.ToLower();
-
-        // Define Sinhala pattern words in a HashSet
-        var sinhalaPatterns = new HashSet<string>
-        {
-            "ayubowan", "kohomada", "mata", "mama", "oba", "api", "meka", "eka", "dan", "kiyala"
-        };
-
-        // Split input text into words
-        var words = lowerText.Split(new[] { ' ', ',', '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries);
-
-        // Check if any word in the text is in the HashSet
-        bool hasSinhalaScript = words.Any(word => sinhalaPatterns.Contains(word));
-
-        Console.WriteLine(hasSinhalaScript); // Output: True
-    }
-}
- */
