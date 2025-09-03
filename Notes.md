@@ -12,3 +12,9 @@
 
 ## TODO:
 	- word frequency
+	- The, are, is, 
+	- He, She
+	- Remove abreviated words
+	- Make an Index that already has populated song title, artist and the corresponding Lang
+	- Seperate Class to resolve Unicode
+	- Conduct Testing
