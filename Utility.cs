@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,12 +31,6 @@ namespace Lyrilang
             String[] tokenizedSource = sourceString.ToLower().Split(delimeterList, StringSplitOptions.RemoveEmptyEntries);
 
             return tokenizedSource;
-        }
-
-        public static bool IsEnumValue(object enumValue, Type enumType, string valueName)
-        {
-            var targetValue = Enum.Parse(enumType, valueName);
-            return enumValue.Equals(targetValue);
         }
     }
 }

@@ -8,43 +8,47 @@ using System.Reflection;
 
 namespace Lyrilang
 {
+    public enum supportedLanguages
+    {
+        langEnglish,
+        langSinhala,
+        langTamil,
+        langDevanagari,
+        langArabic,
+        langChinese,
+        langKorean,
+        langThai,
+        langJapanese,
+        LANGUAGE_NOT_SUPPORTED
+    }
     public class LyrilangEngine
     {
         public LyrilangEngine(String titleName, String albumName, String songLyrics)
         {
-            String sourceString = Utility.prepSourceString(titleName, albumName, songLyrics);
-            
-            // Unicode Detector meta-programming approach
-            UnicodeDetectorGenerator detectorGenerator = new UnicodeDetectorGenerator("./GeneratedUnicodeDetector.cs");
-            object detector = detectorGenerator.CreateUnicodeDetectorInstance();
-            Type detectorType = detector.GetType();
-            MethodInfo checkForUnicodeMethod = detectorType.GetMethod("checkForUnicode");
-            Type enumType = detectorType.GetNestedType("supportedUnicodeLanguages");
 
-            object result = checkForUnicodeMethod.Invoke(detector, new object[] { sourceString });
+            // TODO: Check whether text contain unicode
+             // if: run unicode if-not: tokenize
 
-            // Resolve Unicode Types
-            if (Utility.IsEnumValue(result, enumType, "scriptSinhala"))
-            {
-                Console.WriteLine("Found: Sinhalese Unicode");
-            }
-            if (Utility.IsEnumValue(result, enumType, "scriptChinese"))
-            {
-                Console.WriteLine("Found: Chinese Unicode");
-            }
-            if (Utility.IsEnumValue(result, enumType, "scriptHiragana") || Utility.IsEnumValue(result, enumType, "scriptKatakana"))
-            {
-                Console.WriteLine("Found: Japanese Unicode");
-            }
 
-            // todo: words
-            String[] tokenizedSource = Utility.sourceStringTokenizer(sourceString);
-            if (containSinhalaWords(tokenizedSource))
-            {
-                Console.WriteLine("Found: Sinhala Words");
-            }
+            //String[] tokenizedSource = Utility.sourceStringTokenizer(sourceString);
+
+            //if (containSinhalaWords(tokenizedSource))
+            //{
+            //    Console.WriteLine("Found: Sinhala Words");
+            //}
 
             Console.WriteLine("END OF EXECUTION");
+        }
+
+        public static String testFunc()
+        {
+            return "hello";
+        }
+
+        public static supportedLanguages detectLang(String titleName, String albumName, String songLyrics)
+        {
+            String sourceString = Utility.prepSourceString(titleName, albumName, songLyrics);
+            return UnicodeResolution.resolveUnicode(sourceString);
         }
 
         private static bool containSinhalaWords(String[] tokenizedSource) {
